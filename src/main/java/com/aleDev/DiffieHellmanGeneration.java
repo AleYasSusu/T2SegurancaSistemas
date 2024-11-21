@@ -4,8 +4,9 @@ import java.math.BigInteger;
 
 
 public class DiffieHellmanGeneration {
+
     public static void main(String[] args) {
-// Valores fornecidos (p e g em hexadecimal)
+        // Valores fornecidos (p e g em hexadecimal)
         String pHex = """
                 B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C69A6A9DCA52D23B61
                 6073E28675A23D189838EF1E2EE652C013ECB4AEA906112324975C3CD49B83BF
