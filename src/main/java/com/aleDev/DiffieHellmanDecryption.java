@@ -1,145 +1,111 @@
 package com.aleDev;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class DiffieHellmanDecryption {
 
     public static void main(String[] args) throws Exception {
-        // Valores fornecidos (p e g em hexadecimal)
-        String pHex = """
-                B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C69A6A9DCA52D23B61
-                6073E28675A23D189838EF1E2EE652C013ECB4AEA906112324975C3CD49B83BF
-                ACCBDD7D90C4BD7098488E9C219A73724EFFD6FAE5644738FAA31A4FF55BCCC0
-                A151AF5F0DC8B4BD45BF37DF365C1A65E68CFDA76D4DA708DF1FB2BC2E4A4371
-                """;
+        // Etapa 1: Diffie-Hellman
+        String P_HEX = "B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C6" +
+                "9A6A9DCA52D23B616073E28675A23D189838EF1EEE652C0" +
+                "13ECB4AEA906112324975C3CD49B83BFACCBDD7D90C4BD70" +
+                "98488E9C219A73724EFFD6FAE5644738FAA31A4FF55BCCC0" +
+                "A151AF5F0DC8B4BD45BF37DF365C1A65E68CFDA76D4DA708" +
+                "DF1FB2BC 2E4A4371";
+        String G_HEX = "A4D1CBD5C3FD34126765A442EFB99905F8104DD258AC507F" +
+                "D6406CFF14266D31266FEA1E5C41564B777E690F5504F213" +
+                "160217B4B01B886A5E91547F9E2749F4D7FBD7D3B9A92EE1" +
+                "909D0D2263F80A76A6A24C087A091F531DBF0A0169B6A28A" +
+                "D662A4D18E73AFA32D779D5918D08BC8858F4DCEF97C2A24" +
+                "855E6EEB22B3B2E5";
 
+        BigInteger p = new BigInteger(P_HEX.replaceAll("\\s", ""), 16);
+        BigInteger g = new BigInteger(G_HEX.replaceAll("\\s", ""), 16);
 
-        // Convertendo os valores fornecidos para BigInteger
-        BigInteger p = new BigInteger(pHex.replace("\n", "").replace(" ", ""), 16);
-
-        // Valor fixo de 'a' fornecido
         BigInteger a = new BigInteger("1179384367866944962701170917197320572924798963556873971958304443979154591845677174190613581118814432035661344670984319756742925295640982913397441690376024917967445622577274761166639357060674284056878097937114193036961094567556356894279455858784040014544473324470018056719570570534418388285723752403200707717");
+        BigInteger A = g.modPow(a, p);
 
-        // Calcular A = g^a mod p
-        String AHex = "183DB190C75D5315F0C8F416A2EC14A71FC1B88FC5FE85C83D48378FB5D7F62CA10EFC9C3773131F12FD53FE356D7885945636FD6E85753781AA51E599F6C0B926739B200BC6EA84BEAC5D8717D59AD007367FCB3F12925E3B1E986E9EEB59AD23AD45EAB9EF7E99CBDDE498DEF5AFAF0093540AFF159B5278D54E7EACD898AE";
-        BigInteger A = new BigInteger(AHex, 16);
-        System.out.println("Valor de 'a' (secreto): " + a);
-        System.out.println("Valor de 'A' (em hexadecimal): " + A.toString(16).toUpperCase());
-
-        // Agora, calcular B^a mod p (assumindo que B seja fornecido)
+        // Receber B (substitua pelo valor recebido)
         String BHex = "00AF500EC6CBAF03F5C539855D13F84831ECFD0CD855EF79BBBFE45BD1A62111A1E98A7D49A47412F7E564A45239B12FEDC5C366570325C0E5E1F4C64E1FC736EA8C89F725A96AF9F859DDF96CC2582670680F849A5305B598DF6400381FA0D15A9B59DD29477BDE659948223C9A52DE95EF8895187CD966239E2F28D3EE058C6906358FDA653E7883925F21F6B5D457B0FD004D052DF4222D44B80E09229F6B287BD48CE22647F0FBFFE96CDAA5A6A21C5989309E4B15A54DE030282F170307F3BD070F7CC1421028AA8E85EC80806071BB29C4BEF2E04A713E289FC3DBFBF7188874D2BD0916643185D6D500C66BEAA420D571A21093CED1D8D60A88";
-
-        // Convertendo o valor de 'B' de hexadecimal para BigInteger
+        validateHexInput(BHex);
         BigInteger B = new BigInteger(BHex, 16);
 
-        // Verificando o valor de 'B'
-        System.out.println("Valor de 'B' (em hexadecimal): " + B.toString(16).toUpperCase());
-        BigInteger V = B.modPow(a, p);  // Calcular V = B^a mod p
-        System.out.println("Valor de 'V' (em hexadecimal): " + V.toString(16).toUpperCase());
+        BigInteger V = B.modPow(a, p);
 
-        // Calcular SHA-256 de V para derivar a chave AES
-        byte[] aesKey = calculateKeyFromV(V);
-        System.out.println("Chave de AES (128 bits): " + bytesToHex(aesKey));
+        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+        byte[] hash = sha256.digest(V.toByteArray());
 
-        // Mensagem cifrada fornecida (IV + EMsg)
-        String encryptedMessageHex = "49a4508207f0fd2d97fc1b116b6ac83d1ec21b7454bef94b5f303596db2b32c0849327bb4058ef39fabd6523b93dfd6317816aa76d64da8eae06d4720989b884a4d1a1ef1f8e35704659c5c8c67f0fc2";
+        if (hash.length < 16) {
+            throw new IllegalStateException("Hash gerado possui menos de 16 bytes");
+        }
 
-        // Decodificando a mensagem cifrada
-        byte[] encryptedMessage = hexToBytes(encryptedMessageHex);
-        byte[] iv = Arrays.copyOfRange(encryptedMessage, 0, 16);  // IV é o primeiro bloco de 128 bits
-        byte[] cipherText = Arrays.copyOfRange(encryptedMessage, 16, encryptedMessage.length);  // O restante é a mensagem cifrada
+        byte[] sBytes = new byte[16];
+        System.arraycopy(hash, hash.length - 16, sBytes, 0, 16);
 
-        // Decodificando a mensagem com AES CBC
-        String decryptedMessage = decryptAES_CBC(aesKey, iv, cipherText);
+        // Etapa 2: Decifrar, inverter, e recifrar
+        String receivedData = "49a4508207f0fd2d97fc1b116b6ac83d1ec21b7454bef94b5f303596db2b32c0849327bb4058ef39fabd6523b93dfd6317816aa76d64da8eae06d4720989b884a4d1a1ef1f8e35704659c5c8c67f0fc2";
+        processMessage(receivedData, sBytes);
+    }
+
+    private static void processMessage(String encryptedData, byte[] key) throws Exception {
+        // Extrair IV e mensagem criptografada
+        String ivHex = encryptedData.substring(0, 32);  // Verifique se o IV tem exatamente 16 bytes
+        String encryptedMessageHex = encryptedData.substring(32);  // O restante é a mensagem cifrada
+
+        byte[] iv = hexStringToBytes(ivHex);  // Conversão do IV
+        byte[] encryptedMessage = hexStringToBytes(encryptedMessageHex);  // Conversão da mensagem cifrada
+
+        // Verifique o comprimento da mensagem cifrada para garantir que seja múltiplo de 16 bytes
+        if (encryptedMessage.length % 16 != 0) {
+            throw new IllegalStateException("A mensagem cifrada não tem um comprimento adequado para AES.");
+        }
+
+        // Decifrar a mensagem
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        SecretKey secretKey = new SecretKeySpec(key, "AES");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));  // Configuração da cifra para decifração
+        byte[] decryptedMessageBytes = cipher.doFinal(encryptedMessage);  // Descriptografar a mensagem
+
+        String decryptedMessage = new String(decryptedMessageBytes);
         System.out.println("Mensagem decifrada: " + decryptedMessage);
 
-        // Inverter a mensagem decifrada
+        // Inverter a mensagem
         String reversedMessage = new StringBuilder(decryptedMessage).reverse().toString();
         System.out.println("Mensagem invertida: " + reversedMessage);
 
-        // Re-cifrar a mensagem invertida com um IV aleatório
-        byte[] newIv = generateRandomIv();
-        byte[] encryptedReversedMessage = encryptAES_CBC(aesKey, newIv, reversedMessage.getBytes());
-        String encryptedReversedMessageHex = bytesToHex(newIv) + bytesToHex(encryptedReversedMessage);
-        System.out.println("Mensagem cifrada novamente com IV aleatório: " + encryptedReversedMessageHex);
+        // Cifrar novamente a mensagem invertida
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));  // Reconfiguração da cifra para cifragem
+        byte[] encryptedReversedMessageBytes = cipher.doFinal(reversedMessage.getBytes());
+
+        System.out.println("Mensagem cifrada para envio (hex): " + ivHex + bytesToHex(encryptedReversedMessageBytes));
     }
 
-    // Função para calcular a chave de AES a partir de V
-    public static byte[] calculateKeyFromV(BigInteger V) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] VBytes = V.toByteArray();
-        byte[] hash = digest.digest(VBytes);
-        // Log para ver o valor de SHA-256 de V (S)
-        System.out.println("Valor de S (SHA-256 de V, em hexadecimal): " + bytesToHex(hash));
-
-        // Pegar os 128 bits menos significativos
-        byte[] key = new byte[16]; // 128 bits = 16 bytes
-        System.arraycopy(hash, 0, key, 0, 16);
-        return key;
-    }
-
-    // Função para converter bytes para string hexadecimal
-    public static String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : bytes) {
-            hexString.append(String.format("%02x", b));
-        }
-        return hexString.toString().toUpperCase();
-    }
-
-    // Função para converter hexadecimal para bytes
-    public static byte[] hexToBytes(String hex) {
-        int len = hex.length();
+    private static byte[] hexStringToBytes(String hexString) {
+        int len = hexString.length();
         byte[] bytes = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
-            bytes[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i + 1), 16));
+            bytes[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
+                    + Character.digit(hexString.charAt(i + 1), 16));
         }
         return bytes;
     }
 
-    // Função para gerar um IV aleatório (128 bits)
-    public static byte[] generateRandomIv() {
-        byte[] iv = new byte[16]; // 128 bits
-        new java.security.SecureRandom().nextBytes(iv);
-        return iv;
-    }
-
-    // Função para decifrar a mensagem com AES CBC
-    public static String decryptAES_CBC(byte[] key, byte[] iv, byte[] cipherText) throws Exception {
-        // Verifica se o IV e o CipherText possuem o tamanho adequado
-        if (iv.length != 16) {
-            throw new IllegalArgumentException("IV deve ter 16 bytes.");
-        }
-        if (cipherText.length % 16 != 0) {
-            throw new IllegalArgumentException("CipherText deve ser um múltiplo de 16 bytes.");
-        }
-
-        // Inicializando o Cipher para decriptação
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.DECRYPT_MODE, new javax.crypto.spec.SecretKeySpec(key, "AES"), ivSpec);
-
-        try {
-            // Decriptando a mensagem
-            byte[] decryptedBytes = cipher.doFinal(cipherText);
-            return new String(decryptedBytes, "UTF-8");  // Usando UTF-8 para evitar problemas com encoding
-        } catch (javax.crypto.BadPaddingException e) {
-            System.err.println("Erro de padding durante a decriptação: " + e.getMessage());
-            throw new Exception("Erro de padding. Verifique se a chave e o IV estão corretos.");
+    private static void validateHexInput(String hex) {
+        if (!hex.matches("[0-9a-fA-F]+")) {
+            throw new IllegalArgumentException("Entrada hexadecimal inválida: " + hex);
         }
     }
 
-    // Função para cifrar a mensagem com AES CBC
-    public static byte[] encryptAES_CBC(byte[] key, byte[] iv, byte[] plainText) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.ENCRYPT_MODE, new javax.crypto.spec.SecretKeySpec(key, "AES"), ivSpec);
-        return cipher.doFinal(plainText);
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            hexString.append(String.format("%02x", b));
+        }
+        return hexString.toString();
     }
 }
