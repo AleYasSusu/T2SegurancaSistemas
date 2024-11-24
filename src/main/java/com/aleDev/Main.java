@@ -33,7 +33,7 @@ public class Main {
             byte[] sKey = Arrays.copyOfRange(sHash, sHash.length - 16, sHash.length);
 
             // 4. Decifrar mensagem do professor
-            String encryptedMessageWithIVHex = "38f6b15030a00b939c8378d00666938f7b6c188eddb14af6aff3dab6f218a8f1e8f6bd9215be466df9c39893075e442226c94a11367659d3db6f78e2dacba46b86e7ba6d34648b4c1e92201bedef2805";
+            String encryptedMessageWithIVHex = "9686b5abb530844a2d2102ff4b04baf58ca6be39fa28eeaeb42dff8dfbc40f3a9413e95797fdb619b5e35ae3d2451bf454310069f83068d8cec2b73f0da6aa1d40580184703961b03b7d2c77dbc105c4";
 
             // Extrair IV (primeiros 16 bytes = 32 caracteres hexadecimais)
             String ivHex = encryptedMessageWithIVHex.substring(0, 32);
