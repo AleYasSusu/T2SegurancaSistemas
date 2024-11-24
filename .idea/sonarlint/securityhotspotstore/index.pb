@@ -33,3 +33,11 @@ Q
 !src/main/java/com/aleDev/AES.java,0/e/0edde6b301b08f72939c5b2d28a25f1a4240779a
 S
 #src/main/java/com/aleDev/Utils.java,8/4/8439fe5458ae5e671bf3e5c515ff220ddf6b0588
+e
+5src/main/java/com/aleDev/GerarChaveDiffieHellman.java,c/e/ce2c754bf82b4080a84045a5c1b30a847c7b44fc
+b
+2src/main/java/com/aleDev/DiffieHellmanService.java,4/e/4e3bdd7163dda0cb8b6429832db4a1b90c9e1e79
+[
++src/main/java/com/aleDev/CryptoService.java,6/4/6438d10ba53d6731b969972abe7459fa56a9e763
+R
+"src/main/java/com/aleDev/Main.java,c/0/c0236dc68e535abafa630d570f9b970c8c63af4c
