@@ -10,6 +10,7 @@ public class DiffieHellmanService {
 
     /**
      * Construtor para inicializar os parâmetros do Diffie-Hellman.
+     *
      * @param p O número primo grande utilizado como módulo.
      * @param g O gerador utilizado como base.
      */
@@ -41,11 +42,10 @@ public class DiffieHellmanService {
      * - `p` é o módulo (primo grande).
      *
      * @param otherPublicKey A chave pública do outro participante.
-     * @param privateKey A chave privada do usuário.
+     * @param privateKey     A chave privada do usuário.
      * @return O segredo compartilhado (S).
      */
     public BigInteger calculateSharedSecret(BigInteger otherPublicKey, BigInteger privateKey) {
-        // Eleva a chave pública do outro participante à potência da chave privada, módulo p
         return otherPublicKey.modPow(privateKey, p);
     }
 }

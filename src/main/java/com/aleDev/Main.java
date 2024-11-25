@@ -62,7 +62,6 @@ public class Main {
 
             // Gerar um novo IV aleatório
             byte[] randomIV = cryptoService.generateRandomIV();
-            // Cifrar a mensagem revertida com a nova IV
             byte[] encryptedResponse = cryptoService.encryptAES(reversedMessage.getBytes(StandardCharsets.UTF_8), sKey, randomIV);
 
             // *** 6. Exibir mensagem final no formato correto ***
